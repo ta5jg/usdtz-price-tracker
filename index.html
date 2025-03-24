@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>USDTz Fiyat Görüntüleyici</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tronweb3/tronweb"></script>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      margin-top: 50px;
+      background: #f8f8f8;
+    }
+    .card {
+      display: inline-block;
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    }
+    h1 {
+      margin-bottom: 20px;
+    }
+    #price {
+      font-size: 2em;
+      color: green;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>USDTz (MockPriceFeed)</h1>
+    <p>Şu anki fiyat (USD cinsinden):</p>
+    <div id="price">Yükleniyor...</div>
+  </div>
+
+  <script>
+    const tronWeb = new TronWeb({
+      fullHost: 'https://api.trongrid.io'
+    });
+
+    const priceFeedAddress = 'TSywCWhWogVU8An5TVZmZbvEZfmaS9BBDM';
+
+    const abi = [
+      {
+        "inputs": [],
+        "name": "latestRoundData",
+        "outputs": [
+          { "internalType": "uint80", "name": "roundId", "type": "uint80" },
+          { "internalType": "int256", "name": "answer", "type": "int256" },
+          { "internalType": "uint256", "name": "startedAt", "type": "uint256" },
+          { "internalType": "uint256", "name": "updatedAt", "type": "uint256" },
+          { "internalType": "uint80", "name": "answeredInRound", "type": "uint80" }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      }
+    ];
+
+    async function loadPrice() {
+      const contract = await tronWeb.contract(abi, priceFeedAddress);
+      const result = await contract.latestRoundData().call();
+      const rawPrice = result.answer;
+      const formattedPrice = (parseInt(rawPrice) / 1e8).toFixed(4);
+      document.getElementById('price').innerText = `$${formattedPrice}`;
+    }
+
+    loadPrice().catch(e => {
+      document.getElementById('price').innerText = "Fiyat alınamadı!";
+      console.error("Fiyat alınırken hata:", e);
+    });
+  </script>
+</body>
+</html>
